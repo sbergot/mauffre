@@ -157,6 +157,9 @@ function compareWords(challenge: Entry[], reference: Entry[]) {
     }
   }
   for (let i = 0; i < 5; i++) {
+    if (challenge[i].comp.letterPosGood) {
+      continue;
+    }
     if (reference.findIndex((e) => e.letter === challenge[i].letter) >= 0) {
       const letter = challenge[i].letter;
       if (count[letter] > 0) {
