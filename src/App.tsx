@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { Fragment, ReactNode, useEffect, useState } from "react";
 import {
   cloneLetters,
   compareGrids,
@@ -97,14 +97,14 @@ function App() {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-2 flex flex-col justify-center">
+    <div className="max-w-lg mx-auto p-2 flex flex-col justify-center">
       <span className="text-4xl font-semibold mx-auto mb-4">Mauffre</span>
-      <div className="flex flex-col text-center gap-2 text-4xl font-semibold mx-auto">
+      <div className="grid grid-cols-5 grid-flow-row text-center gap-2 text-4xl font-semibold">
         {range5.map((i) => (
-          <div key={i} className="flex">
+          <Fragment key={i}>
             {range5.map((j) => {
               let classes =
-                "w-20 h-20 inline-block mx-1 flex justify-center items-center rounded-lg";
+                "h-20 w-full inline-block mx-1 flex items-center justify-items-center rounded-lg";
               const entry = letters[i][j];
               if (isValidCoord({ x: i, y: j })) {
                 classes += " border border-4 hover:shadow-2xl";
@@ -134,11 +134,11 @@ function App() {
                   key={j}
                   className={classes}
                 >
-                  <span>{entry.letter.toUpperCase()}</span>
+                  <span className="mx-auto">{entry.letter.toUpperCase()}</span>
                 </span>
               );
             })}
-          </div>
+          </Fragment>
         ))}
       </div>
       <span className="text-2xl font-semibold mx-auto mb-4">
