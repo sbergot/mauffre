@@ -1,4 +1,13 @@
 import words from "./mots_5.json";
+import seedrandom, { PRNG } from "seedrandom";
+
+let rng: PRNG;
+
+export function seed() {
+  let now = new Date();
+  let seed_str = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
+  rng = seedrandom(seed_str);
+}
 
 export interface CharComp {
   letterGood: boolean;
@@ -15,7 +24,8 @@ export type Grid = Entry[][];
 export const range5 = [...Array(5).keys()];
 
 function randomElt<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(rng() * arr.length)];
+  // return arr[random.int(1, arr.length) - 1];
 }
 
 const randomWord = () => randomElt(words);
@@ -166,12 +176,12 @@ function getHorizontalWord(letters: Grid, x: number): Entry[] {
 }
 
 export function compareGrids(challenge: Grid, reference: Grid): Grid {
-  challenge.forEach((row) =>
+  const result = cloneLetters(challenge);
+  result.forEach((row) =>
     row.forEach((entry) => {
       entry.comp = { letterGood: false, letterPosGood: false };
     })
   );
-  const result = cloneLetters(challenge);
   [0, 2, 4].forEach((x) => {
     compareWords(getVerticalWord(result, x), getVerticalWord(reference, x));
   });

@@ -1,16 +1,34 @@
-import { useEffect, useState } from "react";
-import { cloneLetters, compareGrids, Coords, Grid, initArray, initWords, isValidCoord, randomCoordPair, range5, swapCells } from "./utils";
+import { ReactNode, useEffect, useState } from "react";
+import {
+  cloneLetters,
+  compareGrids,
+  Coords,
+  Grid,
+  initArray,
+  initWords,
+  isValidCoord,
+  randomCoordPair,
+  range5,
+  seed,
+  swapCells,
+} from "./utils";
+
+type State = "play" | "win" | "loose";
 
 function App() {
+  const [state, setState] = useState<State>("play");
+
   const [letters, setLetters] = useState<Grid>(initArray());
   const [reference, setReference] = useState<Grid>(initArray());
   const [selected, setSelected] = useState<Coords | null>(null);
+  const [moves, setMoves] = useState<number>(40);
 
   useEffect(() => {
+    seed();
     const init = initWords();
     const init_reference = cloneLetters(init);
     setReference(init_reference);
-    for (let i =0; i<500; i++) {
+    for (let i = 0; i < 500; i++) {
       const [c1, c2] = randomCoordPair();
       swapCells(init, c1, c2);
     }
@@ -19,26 +37,64 @@ function App() {
   }, []);
 
   function swap(c1: Coords, c2: Coords) {
-    setLetters(letters => {
+    setLetters((letters) => {
       const l1 = letters[c1.x][c1.y];
       const l2 = letters[c2.x][c2.y];
       const new_letters = cloneLetters(letters);
       new_letters[c1.x][c1.y] = l2;
       new_letters[c2.x][c2.y] = l1;
-      compareGrids(new_letters, reference);
-      return new_letters;
-    })
+      const compared_grid = compareGrids(new_letters, reference);
+
+      let goodpos = 0;
+      compared_grid.forEach(row => row.forEach(e => {
+        if (e.comp.letterPosGood) {
+          goodpos += 1;
+        }
+      }));
+      if (goodpos === 21) {
+        setState("win");
+      }
+      return compared_grid;
+    });
   }
 
   function pick(c: Coords) {
+    if (state !== "play") {
+      return
+    }
     if (!selected) {
       setSelected(c);
+    } else if (c.x === selected.x && c.y === selected.y) {
+      setSelected(null);
     } else {
       swap(selected, c);
+      setMoves((m) => {
+        if (m === 1) {
+          setState("loose");
+          setSelected(null);
+        }
+        return m - 1;
+      });
       setSelected(null);
     }
   }
 
+  let component: ReactNode = null;
+  if (state === "loose") {
+    component = (
+      <div className="text-2xl font-semibold mx-auto mb-4">
+        Vous avez perdu!
+      </div>
+    );
+  }
+
+  if (state === "win") {
+    component = (
+      <div className="text-2xl font-semibold mx-auto mb-4">
+        Vous avez gagné!
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto p-2 flex flex-col justify-center">
@@ -48,26 +104,36 @@ function App() {
           <div key={i} className="flex">
             {range5.map((j) => {
               let classes =
-                "w-20 h-20 inline-block mx-1 cursor-pointer flex justify-center items-center rounded-lg";
+                "w-20 h-20 inline-block mx-1 flex justify-center items-center rounded-lg";
               const entry = letters[i][j];
-              if (isValidCoord({x: i, y: j})) {
-                classes += " border border-4";
+              if (isValidCoord({ x: i, y: j })) {
+                classes += " border border-4 hover:shadow-2xl";
+
+                if (state === "play") {
+                  classes += " cursor-pointer"
+                } else {
+                  classes += " cursor-not-allowed"
+                }
 
                 if (selected && selected.x === i && selected.y === j) {
                   classes += " border-sky-600";
                 } else {
-                  classes += " border-black"
-                }  
+                  classes += " border-black";
+                }
               }
 
               if (entry.comp.letterPosGood) {
-                classes += " bg-emerald-300"
+                classes += " bg-emerald-300";
               } else if (entry.comp.letterGood) {
-                classes += " bg-yellow-200"
+                classes += " bg-yellow-200";
               }
 
               return (
-                <span onClick={() => pick({x: i, y: j})} key={j} className={classes}>
+                <span
+                  onClick={() => pick({ x: i, y: j })}
+                  key={j}
+                  className={classes}
+                >
                   <span>{entry.letter.toUpperCase()}</span>
                 </span>
               );
@@ -75,6 +141,10 @@ function App() {
           </div>
         ))}
       </div>
+      <span className="text-2xl font-semibold mx-auto mb-4">
+        {moves} coups restant
+      </span>
+      {component}
     </div>
   );
 }

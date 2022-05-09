@@ -7,12 +7,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "random": "^3.0.6",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "seedrandom": "^3.0.5"
   },
   "devDependencies": {
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
+    "@types/seedrandom": "^3.0.2",
     "@vitejs/plugin-react": "^1.0.7",
     "autoprefixer": "^10.4.7",
     "postcss": "^8.4.13",
