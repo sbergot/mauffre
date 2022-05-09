@@ -141,7 +141,7 @@ function App() {
           </Fragment>
         ))}
       </div>
-      <span className="text-2xl font-semibold mx-auto mb-4">
+      <span className="text-2xl font-semibold mx-auto my-4">
         {moves} coups restant
       </span>
       {component}
