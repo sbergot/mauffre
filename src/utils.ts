@@ -24,7 +24,7 @@ interface Entry {
 
 type Grid = Entry[][];
 
-type Phase = "play" | "win" | "loose";
+export type Phase = "play" | "win" | "loose";
 
 export interface Coords {
   x: number;

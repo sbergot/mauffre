@@ -16,6 +16,7 @@ import {
   isValidCoord,
   loadState,
   newGrid,
+  Phase,
   range5,
   saveState,
 } from "./utils";
@@ -82,23 +83,6 @@ function App() {
     }
   }
 
-  let component: ReactNode = null;
-  if (phase === "loose") {
-    component = (
-      <div className="text-2xl font-semibold mx-auto mb-4">
-        Vous avez perdu!
-      </div>
-    );
-  }
-
-  if (phase === "win") {
-    component = (
-      <div className="text-2xl font-semibold mx-auto mb-4">
-        Vous avez gagné!
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-lg mx-auto p-2 flex flex-col justify-center">
       <span className="text-4xl font-semibold mx-auto mb-4">Mauffre</span>
@@ -144,12 +128,32 @@ function App() {
           </Fragment>
         ))}
       </div>
+      <EndGameMessage phase={phase} />
       <span className="text-2xl font-semibold mx-auto my-4">
         {remainingMoves} coups restant
       </span>
-      {component}
     </div>
   );
+}
+
+function EndGameMessage(props: {phase: Phase}) {
+  if (props.phase === "loose") {
+    return (
+      <div className="text-2xl font-semibold mx-auto mb-4">
+        Vous avez perdu!
+      </div>
+    );
+  }
+
+  if (props.phase === "win") {
+    return (
+      <div className="text-2xl font-semibold mx-auto mb-4">
+        Vous avez gagné!
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export default App;
