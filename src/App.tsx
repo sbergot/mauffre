@@ -59,7 +59,7 @@ function App() {
   }
 
   function pick(c: Coords) {
-    if (phase !== "play") {
+    if (phase !== "play" || state.grid[c.x][c.y].comp.letterPosGood) {
       return;
     }
     if (!selected) {
@@ -112,7 +112,7 @@ function App() {
               if (isValidCoord({ x: i, y: j })) {
                 classes += " border border-4 hover:shadow-2xl";
 
-                if (phase === "play") {
+                if (phase === "play" && !entry.comp.letterPosGood) {
                   classes += " cursor-pointer";
                 } else {
                   classes += " cursor-not-allowed";
