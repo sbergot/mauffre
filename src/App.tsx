@@ -94,10 +94,10 @@ function App() {
                 "h-20 w-full inline-block mx-1 flex items-center justify-items-center rounded-lg";
               const entry = grid[i][j];
               if (isValidCoord({ x: i, y: j })) {
-                classes += " border border-4 hover:shadow-2xl";
+                classes += " border border-4";
 
                 if (phase === "play" && !entry.comp.letterPosGood) {
-                  classes += " cursor-pointer";
+                  classes += " cursor-pointer hover:shadow-2xl";
                 } else {
                   classes += " cursor-not-allowed";
                 }
