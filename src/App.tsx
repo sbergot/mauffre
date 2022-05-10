@@ -1,66 +1,66 @@
-import { Fragment, ReactNode, useEffect, useState } from "react";
 import {
+  Dispatch,
+  Fragment,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
+import {
+  AppState,
+  checkWinLooseConditions,
   cloneLetters,
   compareGrids,
   Coords,
-  Grid,
-  initArray,
-  initWords,
+  initState,
   isValidCoord,
-  randomCoordPair,
+  loadState,
+  newGrid,
   range5,
-  seed,
-  swapCells,
+  saveState,
 } from "./utils";
 
-type State = "play" | "win" | "loose";
-
 function App() {
-  const [state, setState] = useState<State>("play");
+  const [state, setState] = useState<AppState>(initState());
 
-  const [letters, setLetters] = useState<Grid>(initArray());
-  const [reference, setReference] = useState<Grid>(initArray());
-  const [selected, setSelected] = useState<Coords | null>(null);
-  const [moves, setMoves] = useState<number>(40);
+  const { phase, grid, reference, selected, remainingMoves } = state;
 
   useEffect(() => {
-    seed();
-    const init = initWords();
-    const init_reference = cloneLetters(init);
-    setReference(init_reference);
-    for (let i = 0; i < 500; i++) {
-      const [c1, c2] = randomCoordPair();
-      swapCells(init, c1, c2);
+    const loadedState = loadState();
+    if (loadedState !== null) {
+      setState(loadedState);
+    } else {
+      const [init_reference, init_with_comp] = newGrid();
+      setState((s) => ({
+        ...s,
+        reference: init_reference,
+        grid: init_with_comp,
+      }));
     }
-    const init_with_comp = compareGrids(init, init_reference);
-    setLetters(init_with_comp);
   }, []);
 
+  useEffect(() => saveState(state));
+
+  function setSelected(c: Coords | null) {
+    setState((s) => ({ ...s, selected: c }));
+  }
+
   function swap(c1: Coords, c2: Coords) {
-    setLetters((letters) => {
+    setState((s) => {
+      const letters = s.grid;
       const l1 = letters[c1.x][c1.y];
       const l2 = letters[c2.x][c2.y];
       const new_letters = cloneLetters(letters);
       new_letters[c1.x][c1.y] = l2;
       new_letters[c2.x][c2.y] = l1;
       const compared_grid = compareGrids(new_letters, reference);
-
-      let goodpos = 0;
-      compared_grid.forEach(row => row.forEach(e => {
-        if (e.comp.letterPosGood) {
-          goodpos += 1;
-        }
-      }));
-      if (goodpos === 21) {
-        setState("win");
-      }
-      return compared_grid;
+      return { ...s, grid: compared_grid };
     });
   }
 
   function pick(c: Coords) {
-    if (state !== "play") {
-      return
+    if (phase !== "play") {
+      return;
     }
     if (!selected) {
       setSelected(c);
@@ -68,19 +68,22 @@ function App() {
       setSelected(null);
     } else {
       swap(selected, c);
-      setMoves((m) => {
-        if (m === 1) {
-          setState("loose");
-          setSelected(null);
-        }
-        return m - 1;
+      setState((s) => {
+        const new_phase = checkWinLooseConditions(s);
+        const new_selected = new_phase === "play" ? s.selected : null;
+        return {
+          ...s,
+          phase: new_phase,
+          selected: new_selected,
+          remainingMoves: s.remainingMoves - 1,
+        };
       });
       setSelected(null);
     }
   }
 
   let component: ReactNode = null;
-  if (state === "loose") {
+  if (phase === "loose") {
     component = (
       <div className="text-2xl font-semibold mx-auto mb-4">
         Vous avez perdu!
@@ -88,7 +91,7 @@ function App() {
     );
   }
 
-  if (state === "win") {
+  if (phase === "win") {
     component = (
       <div className="text-2xl font-semibold mx-auto mb-4">
         Vous avez gagné!
@@ -105,14 +108,14 @@ function App() {
             {range5.map((j) => {
               let classes =
                 "h-20 w-full inline-block mx-1 flex items-center justify-items-center rounded-lg";
-              const entry = letters[i][j];
+              const entry = grid[i][j];
               if (isValidCoord({ x: i, y: j })) {
                 classes += " border border-4 hover:shadow-2xl";
 
-                if (state === "play") {
-                  classes += " cursor-pointer"
+                if (phase === "play") {
+                  classes += " cursor-pointer";
                 } else {
-                  classes += " cursor-not-allowed"
+                  classes += " cursor-not-allowed";
                 }
 
                 if (selected && selected.x === i && selected.y === j) {
@@ -142,7 +145,7 @@ function App() {
         ))}
       </div>
       <span className="text-2xl font-semibold mx-auto my-4">
-        {moves} coups restant
+        {remainingMoves} coups restant
       </span>
       {component}
     </div>

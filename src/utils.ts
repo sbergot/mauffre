@@ -3,23 +3,42 @@ import seedrandom, { PRNG } from "seedrandom";
 
 let rng: PRNG;
 
-export function seed() {
+function getSeed(): string {
   let now = new Date();
-  let seed_str = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
-  rng = seedrandom(seed_str);
+  return `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
 }
 
-export interface CharComp {
+function seed() {
+  rng = seedrandom(getSeed());
+}
+
+interface CharComp {
   letterGood: boolean;
   letterPosGood: boolean;
 }
 
-export interface Entry {
+interface Entry {
   letter: string;
   comp: CharComp;
 }
 
-export type Grid = Entry[][];
+type Grid = Entry[][];
+
+type Phase = "play" | "win" | "loose";
+
+export interface Coords {
+  x: number;
+  y: number;
+}
+
+export interface AppState {
+  seed: string;
+  phase: Phase;
+  grid: Grid;
+  reference: Grid;
+  selected: Coords | null;
+  remainingMoves: number;
+}
 
 export const range5 = [...Array(5).keys()];
 
@@ -38,7 +57,7 @@ const randomWordFilter = (pred: (s: string) => boolean) => {
   return randomElt(validWords);
 };
 
-export function initArray(): Grid {
+function initArray(): Grid {
   return range5.map(() =>
     range5.map(() => ({
       letter: "",
@@ -47,7 +66,7 @@ export function initArray(): Grid {
   );
 }
 
-export function initWords(): Grid {
+function initWords(): Grid {
   const res = initArray();
   const max_try = 100;
   let try_nbr = 0;
@@ -112,23 +131,18 @@ export function initWords(): Grid {
   return res;
 }
 
-export interface Coords {
-  x: number;
-  y: number;
-}
-
 export function isValidCoord(c: Coords): boolean {
   return (
     c.x === 0 || c.x === 2 || c.x === 4 || c.y === 0 || c.y === 2 || c.y === 4
   );
 }
 
-export const allCoords: Coords[] = range5
+const allCoords: Coords[] = range5
   .map((i) => range5.map((j) => ({ x: i, y: j })))
   .flat()
   .filter(isValidCoord);
 
-export function randomCoordPair(): [Coords, Coords] {
+function randomCoordPair(): [Coords, Coords] {
   return [randomElt(allCoords), randomElt(allCoords)];
 }
 
@@ -194,9 +208,61 @@ export function compareGrids(challenge: Grid, reference: Grid): Grid {
   return result;
 }
 
-export function swapCells(grid: Grid, c1: Coords, c2: Coords) {
+function swapCells(grid: Grid, c1: Coords, c2: Coords) {
   const l1 = grid[c1.x][c1.y];
   const l2 = grid[c2.x][c2.y];
   grid[c1.x][c1.y] = l2;
   grid[c2.x][c2.y] = l1;
+}
+
+export function checkWinLooseConditions(state: AppState): Phase {
+  let goodpos = 0;
+  state.grid.forEach((row) =>
+    row.forEach((e) => {
+      if (e.comp.letterPosGood) {
+        goodpos += 1;
+      }
+    })
+  );
+  return goodpos === 21 ? "win" : state.remainingMoves === 0 ? "loose" : "play";
+}
+
+export function saveState(state: AppState) {
+  localStorage["state"] = JSON.stringify(state);
+}
+
+export function loadState(): AppState | null {
+  const savedStateJson = localStorage.getItem("state");
+  if (savedStateJson === null) {
+    return null;
+  }
+  const savedState = JSON.parse(savedStateJson) as AppState;
+  const currentSeed = getSeed();
+  if (savedState.seed !== currentSeed) {
+    return null;
+  }
+  return savedState;
+}
+
+export function newGrid(): [Grid, Grid] {
+  seed();
+  const init = initWords();
+  const init_reference = cloneLetters(init);
+  for (let i = 0; i < 500; i++) {
+    const [c1, c2] = randomCoordPair();
+    swapCells(init, c1, c2);
+  }
+  const init_with_comp = compareGrids(init, init_reference);
+  return [init_reference, init_with_comp];
+}
+
+export function initState(): AppState {
+  return {
+    seed: getSeed(),
+    phase: "play",
+    grid: initArray(),
+    reference: initArray(),
+    selected: null,
+    remainingMoves: 25,
+  };
 }
