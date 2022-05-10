@@ -84,8 +84,8 @@ function App() {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-2 flex flex-col justify-center">
-      <span className="text-4xl font-semibold mx-auto mb-4">Mauffre</span>
+    <div className="max-w-lg mx-auto p-2 flex flex-col justify-center gap-4">
+      <span className="text-4xl font-semibold mx-auto">Mauffre</span>
       <div className="grid grid-cols-5 grid-flow-row text-center gap-2 text-4xl font-semibold">
         {range5.map((i) => (
           <Fragment key={i}>
@@ -129,7 +129,7 @@ function App() {
         ))}
       </div>
       <EndGameMessage phase={phase} />
-      <span className="text-2xl font-semibold mx-auto my-4">
+      <span className="text-2xl font-semibold mx-auto">
         {remainingMoves} coups restant
       </span>
     </div>
@@ -139,7 +139,7 @@ function App() {
 function EndGameMessage(props: {phase: Phase}) {
   if (props.phase === "loose") {
     return (
-      <div className="text-2xl font-semibold mx-auto mb-4">
+      <div className="text-2xl font-semibold mx-auto">
         Vous avez perdu!
       </div>
     );
@@ -147,7 +147,7 @@ function EndGameMessage(props: {phase: Phase}) {
 
   if (props.phase === "win") {
     return (
-      <div className="text-2xl font-semibold mx-auto mb-4">
+      <div className="text-2xl font-semibold mx-auto">
         Vous avez gagné!
       </div>
     );
