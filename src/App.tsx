@@ -132,24 +132,35 @@ function App() {
       <span className="text-2xl font-semibold mx-auto">
         {remainingMoves} coups restant
       </span>
+      <span className="mx-auto">
+        Inspiré de{" "}
+        <a className="text-cyan-600 underline" href="https://wafflegame.net/">
+          wafflegame.net
+        </a>
+      </span>
+      <span className="mx-auto text-center">
+        Liste de mots récupérée depuis{" "}
+        <a
+          className="block text-cyan-600 underline"
+          href="http://www.pallier.org/liste-de-mots-francais.html"
+        >
+          www.pallier.org/liste-de-mots-francais.html
+        </a>
+      </span>
     </div>
   );
 }
 
-function EndGameMessage(props: {phase: Phase}) {
+function EndGameMessage(props: { phase: Phase }) {
   if (props.phase === "loose") {
     return (
-      <div className="text-2xl font-semibold mx-auto">
-        Vous avez perdu!
-      </div>
+      <div className="text-2xl font-semibold mx-auto">Vous avez perdu!</div>
     );
   }
 
   if (props.phase === "win") {
     return (
-      <div className="text-2xl font-semibold mx-auto">
-        Vous avez gagné!
-      </div>
+      <div className="text-2xl font-semibold mx-auto">Vous avez gagné!</div>
     );
   }
 
