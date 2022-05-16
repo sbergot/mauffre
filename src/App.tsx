@@ -1,11 +1,4 @@
-import {
-  Dispatch,
-  Fragment,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   AppState,
   checkWinLooseConditions,
@@ -69,15 +62,15 @@ function App() {
       setSelected(null);
     } else {
       swap(selected, c);
-      setState((s) => {
-        const new_phase = checkWinLooseConditions(s);
-        const new_selected = new_phase === "play" ? s.selected : null;
-        return {
-          ...s,
-          phase: new_phase,
-          selected: new_selected,
-          remainingMoves: s.remainingMoves - 1,
+      setState((old_state) => {
+        const new_state = {
+          ...old_state,
+          remainingMoves: old_state.remainingMoves - 1,
         };
+        new_state.phase = checkWinLooseConditions(new_state);
+        new_state.selected =
+          new_state.phase === "play" ? old_state.selected : null;
+        return new_state;
       });
       setSelected(null);
     }
@@ -90,13 +83,18 @@ function App() {
         {range5.map((i) => (
           <Fragment key={i}>
             {range5.map((j) => {
+              const entry =
+                state.phase !== "showAnswer" ? grid[i][j] : reference[i][j];
+
               let classes =
                 "h-20 w-full inline-block mx-1 flex items-center justify-items-center rounded-lg";
-              const entry = grid[i][j];
+
               if (isValidCoord({ x: i, y: j })) {
+                const comparison = entry.comp;
+
                 classes += " border border-4";
 
-                if (phase === "play" && !entry.comp.letterPosGood) {
+                if (phase === "play" && !comparison.letterPosGood) {
                   classes += " cursor-pointer hover:shadow-2xl";
                 } else {
                   classes += " cursor-not-allowed";
@@ -107,12 +105,14 @@ function App() {
                 } else {
                   classes += " border-black";
                 }
-              }
 
-              if (entry.comp.letterPosGood) {
-                classes += " bg-emerald-300";
-              } else if (entry.comp.letterGood) {
-                classes += " bg-yellow-200";
+                if (phase === "showAnswer") {
+                  classes += " bg-slate-300";
+                } else if (entry.comp.letterPosGood) {
+                  classes += " bg-emerald-300";
+                } else if (entry.comp.letterGood) {
+                  classes += " bg-yellow-200";
+                }
               }
 
               return (
@@ -128,7 +128,10 @@ function App() {
           </Fragment>
         ))}
       </div>
-      <EndGameMessage phase={phase} />
+      <EndGameMessage
+        phase={phase}
+        setPhase={(phase) => setState((s) => ({ ...s, phase }))}
+      />
       <span className="text-2xl font-semibold mx-auto">
         {remainingMoves} coups restant
       </span>
@@ -151,14 +154,28 @@ function App() {
   );
 }
 
-function EndGameMessage(props: { phase: Phase }) {
-  if (props.phase === "loose") {
+function EndGameMessage({
+  phase,
+  setPhase,
+}: {
+  phase: Phase;
+  setPhase: (p: Phase) => void;
+}) {
+  if (phase === "loose") {
     return (
-      <div className="text-2xl font-semibold mx-auto">Vous avez perdu!</div>
+      <>
+        <div className="text-2xl font-semibold mx-auto">Vous avez perdu!</div>
+        <button
+          className="text-xl font-semibold rounded-lg bg-slate-200 mx-auto p-2 border border-4 border-black"
+          onClick={() => setPhase("showAnswer")}
+        >
+          Afficher les réponses
+        </button>
+      </>
     );
   }
 
-  if (props.phase === "win") {
+  if (phase === "win") {
     return (
       <div className="text-2xl font-semibold mx-auto">Vous avez gagné!</div>
     );

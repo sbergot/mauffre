@@ -24,7 +24,7 @@ interface Entry {
 
 type Grid = Entry[][];
 
-export type Phase = "play" | "win" | "loose";
+export type Phase = "play" | "win" | "loose" | "showAnswer";
 
 export interface Coords {
   x: number;
@@ -44,7 +44,6 @@ export const range5 = [...Array(5).keys()];
 
 function randomElt<T>(arr: T[]): T {
   return arr[Math.floor(rng() * arr.length)];
-  // return arr[random.int(1, arr.length) - 1];
 }
 
 const randomWord = () => randomElt(words);
@@ -135,15 +134,6 @@ export function isValidCoord(c: Coords): boolean {
   return (
     c.x === 0 || c.x === 2 || c.x === 4 || c.y === 0 || c.y === 2 || c.y === 4
   );
-}
-
-const allCoords: Coords[] = range5
-  .map((i) => range5.map((j) => ({ x: i, y: j })))
-  .flat()
-  .filter(isValidCoord);
-
-function randomCoordPair(): [Coords, Coords] {
-  return [randomElt(allCoords), randomElt(allCoords)];
 }
 
 export function cloneLetters(letters: Grid): Grid {
@@ -244,12 +234,30 @@ export function loadState(): AppState | null {
   return savedState;
 }
 
+const swappableCoords: Coords[] = range5
+  .map((i) => range5.map((j) => ({ x: i, y: j })))
+  .flat()
+  .filter(isValidCoord)
+  .filter(({ x, y }) => {
+    return !(
+      (x === 0 && y === 0) ||
+      (x === 0 && y === 4) ||
+      (x === 4 && y === 0) ||
+      (x === 4 && y === 4) ||
+      (x === 2 && y === 2)
+    );
+  });
+
+function randomSwappableCoordPair(): [Coords, Coords] {
+  return [randomElt(swappableCoords), randomElt(swappableCoords)];
+}
+
 export function newGrid(): [Grid, Grid] {
   seed();
   const init = initWords();
   const init_reference = cloneLetters(init);
   for (let i = 0; i < 500; i++) {
-    const [c1, c2] = randomCoordPair();
+    const [c1, c2] = randomSwappableCoordPair();
     swapCells(init, c1, c2);
   }
   const init_with_comp = compareGrids(init, init_reference);
@@ -263,6 +271,6 @@ export function initState(): AppState {
     grid: initArray(),
     reference: initArray(),
     selected: null,
-    remainingMoves: 25,
+    remainingMoves: 20,
   };
 }
