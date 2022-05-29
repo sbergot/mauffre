@@ -53,7 +53,7 @@ function App() {
   }
 
   function pick(c: Coords) {
-    if (phase !== "play" || state.grid[c.x][c.y].comp.letterPosGood) {
+    if (phase !== "play" || state.grid[c.x][c.y].comp.letterPosGood || !isValidCoord(c)) {
       return;
     }
     if (!selected) {
