@@ -274,3 +274,19 @@ export function initState(): AppState {
     remainingMoves: 20,
   };
 }
+
+export function getWords(state: AppState): string[] {
+  const res: string[] = [];
+  const { reference } = state;
+  for (let i of [0, 2, 4]) {
+    const word1: string[] = []
+    const word2: string[] = []
+    for (let j of [0, 1, 2, 3, 4]) {
+      word1.push(reference[i][j].letter);
+      word2.push(reference[j][i].letter);
+    }
+    res.push("".concat(...word1));
+    res.push("".concat(...word2));
+  }
+  return res;
+}

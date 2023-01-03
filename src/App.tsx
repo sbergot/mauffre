@@ -5,6 +5,7 @@ import {
   cloneLetters,
   compareGrids,
   Coords,
+  getWords,
   initState,
   isValidCoord,
   loadState,
@@ -132,6 +133,7 @@ function App() {
         phase={phase}
         setPhase={(phase) => setState((s) => ({ ...s, phase }))}
       />
+      {(phase === "showAnswer" || phase === "win") && <DefinitionLinks state={state} />}
       <span className="text-2xl font-semibold mx-auto">
         {remainingMoves} coups restant
       </span>
@@ -182,6 +184,23 @@ function EndGameMessage({
   }
 
   return null;
+}
+
+function DefinitionLinks({ state }: { state: AppState }) {
+  const results = getWords(state);
+  return <div className="flex flex-col justify-center">
+    <div className="text-xl font-semibold mx-auto">Définitions:</div>
+    <div className="flex">
+      {results.map(w => <div className="text-xl font-semibold mx-auto">
+        <a
+          className="block text-cyan-600 underline"
+          href={`https://www.larousse.fr/dictionnaires/francais/${w}`}
+          target="_blank">
+          {w}
+        </a>
+      </div>)}
+    </div>
+  </div>
 }
 
 export default App;
